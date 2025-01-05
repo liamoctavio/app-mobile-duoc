@@ -18,20 +18,17 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onNavigateToRecover: () -> Unit, // callback para navegar a Recuperar Contraseña
-    onNavigateToRegister: () -> Unit, // callback para navegar a Registro
-    onNavigateToHome: () -> Unit, // callback para navegar a HomeScreen
+    onNavigateToRecover: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    onNavigateToHome: () -> Unit,
     userViewModel: UserViewModel = viewModel()
 ) {
-    // Variables de estado para los campos de usuario y contraseña
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
 
-    // Estado para mostrar mensajes de error
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Snackbar para retroalimentación
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -52,7 +49,6 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campo de texto para el email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -62,7 +58,6 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de texto para la contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -90,10 +85,8 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón de iniciar sesión
             Button(
                 onClick = {
-                    // Validaciones básicas
                     if (email.isBlank() || password.isBlank()) {
                         errorMessage = "Todos los campos son obligatorios."
                         return@Button
@@ -103,7 +96,6 @@ fun LoginScreen(
                         return@Button
                     }
 
-                    // Validar credenciales
                     val valid = userViewModel.validateUser(email, password)
                     if (valid) {
                         coroutineScope.launch {
@@ -119,7 +111,6 @@ fun LoginScreen(
                 Text("Iniciar Sesión")
             }
 
-            // Mostrar mensaje de error si existe
             if (errorMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -131,12 +122,10 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Enlace a la pantalla de registro
             TextButton(onClick = { onNavigateToRegister() }) {
                 Text("¿No tienes una cuenta? Regístrate")
             }
 
-            // Enlace a la pantalla de recuperar contraseña
             TextButton(onClick = { onNavigateToRecover() }) {
                 Text("¿Olvidaste tu contraseña?")
             }
