@@ -11,6 +11,7 @@ class UserViewModel : ViewModel() {
         User(username = "octavio1", email = "octavio1@gmail.com", password = "octavio"),
         User(username = "octavio2", email = "octavio2@gmail.com", password = "octavio"),
         User(username = "octavio3", email = "octavio3@gmail.com", password = "octavio")
+
     )
     val users: List<User> get() = _users
 
