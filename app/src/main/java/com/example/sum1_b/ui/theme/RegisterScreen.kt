@@ -10,22 +10,18 @@ import com.example.sum1_b.viewmodel.UserViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onNavigateBack: () -> Unit,
     userViewModel: UserViewModel = viewModel()
 ) {
-    // Estados para los campos de texto
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // Estado para mostrar mensajes de error
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Snackbar para retroalimentación
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -45,7 +41,6 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campo de Username
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -55,7 +50,6 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -65,7 +59,6 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -76,7 +69,6 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Confirmar Contraseña
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -87,10 +79,8 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón de Registro
             Button(
                 onClick = {
-                    // Validaciones básicas
                     if (username.isBlank() || email.isBlank() || password.isBlank()) {
                         errorMessage = "Todos los campos son obligatorios."
                         return@Button
@@ -104,7 +94,6 @@ fun RegisterScreen(
                         return@Button
                     }
 
-                    // Intentar registrar el usuario
                     val success = userViewModel.registerUser(username, email, password)
                     if (success) {
                         coroutineScope.launch {
@@ -120,7 +109,6 @@ fun RegisterScreen(
                 Text("Registrarse")
             }
 
-            // Mostrar mensaje de error si existe
             if (errorMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
