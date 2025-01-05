@@ -9,12 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+
 
 @Composable
 fun RecoverPasswordScreen(
@@ -63,8 +59,6 @@ fun RecoverPasswordScreen(
                     Toast.makeText(context, "No hay app de correo instalada", Toast.LENGTH_SHORT).show()
                 }
 
-                // Llamada al callback si lo necesitas
-                // onRecoveryRequested(email)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
