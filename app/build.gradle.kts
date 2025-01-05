@@ -58,29 +58,22 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    // ViewModel para Compose
-    // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.8.5") // Verifica la versión más reciente
 
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") // Verifica la versión más reciente
+    implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    // Activity Compose
-    implementation("androidx.activity:activity-compose:1.9.3") // Verifica la versión más reciente
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Material Icons Extended (Opcional)
-    implementation("androidx.compose.material:material-icons-extended:1.7.6") // Verifica la versión más reciente
+    implementation("androidx.activity:activity-compose:1.9.3")
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
 
     implementation("androidx.compose.foundation:foundation:1.4.3")
-    // Asegúrate de que todas las dependencias de Compose tengan la misma versión
 
 
-    // Dependencias de Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    // Este es el importante para Icons (material-icons-extended)
     implementation("androidx.compose.material:material-icons-extended")
 
 
