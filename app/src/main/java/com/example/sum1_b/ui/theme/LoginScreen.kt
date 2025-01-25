@@ -27,167 +27,6 @@ import android.content.Context
 import java.util.*
 
 
-
-
-//@Composable
-//fun LoginScreen(
-//    onNavigateToRecover: () -> Unit,
-//    onNavigateToRegister: () -> Unit,
-//    onNavigateToHome: () -> Unit,
-//    userViewModel: UserViewModel = viewModel(),
-//    context: Context // Pasar el contexto al Speech
-//) {
-//    // Variables de estado para los campos de usuario y contraseña
-//    var email by remember { mutableStateOf("") }
-//    var password by remember { mutableStateOf("") }
-//    var showPassword by remember { mutableStateOf(false) }
-//
-//    // Estado para mostrar mensajes de error
-//    var errorMessage by remember { mutableStateOf<String?>(null) }
-//
-//    // Snackbar para retroalimentación
-//    val snackbarHostState = remember { SnackbarHostState() }
-//    val coroutineScope = rememberCoroutineScope()
-//
-//    //Iniciar TextToSpeech
-//    val tts = remember {
-//        TextToSpeech(context) { status ->
-//            if (status == TextToSpeech.SUCCESS){
-//               tts.language  = Locale.getDefault()
-//            }
-//        }
-//    }
-//
-//    Scaffold(
-//        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-//    ) { paddingValues ->
-//        val sinusar = paddingValues
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//        ) {
-//            // Imagen de fondo
-//            Image(
-//                painter = painterResource(id = R.drawable.fondo), // Cambia a tu imagen de fondo
-//                contentDescription = "Fondo temático violeta",
-//                contentScale = ContentScale.Crop, // Ajusta la imagen para cubrir todo el espacio
-//                modifier = Modifier.fillMaxSize()
-//            )
-//
-//            // Contenido del login
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(16.dp),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Person,
-//                    contentDescription = "Logo de la app",
-//                    modifier = Modifier
-//                        .size(64.dp)
-//                        .padding(bottom = 24.dp),
-//                    tint = MaterialTheme.colorScheme.primary
-//                )
-//                Text(
-//                    text = "Iniciar Sesión",
-//                    style = MaterialTheme.typography.headlineLarge
-//                )
-//                Spacer(modifier = Modifier.height(24.dp))
-//
-//                // Campo de texto para el email
-//                StyleTextField(
-//                    value = email,
-//                    onValueChange = { email = it },
-//                    label = "Correo Electrónico",
-//                    leadingIcon = {
-//                        Icon(Icons.Default.Email, contentDescription = "Icono de correo")
-//                    }
-//                )
-//                Spacer(modifier = Modifier.height(16.dp))
-//
-//                // Campo de texto para la contraseña
-//                StyleTextField(
-//                    value = password,
-//                    onValueChange = { password = it },
-//                    label = "Contraseña",
-//                    leadingIcon = {
-//                        Icon(Icons.Default.Lock, contentDescription = "Icono de candado")
-//                    },
-//                    isPassword = true,
-//                    showPassword = showPassword,
-//                    onPasswordToggle = { showPassword = !showPassword }
-//                )
-//
-//                Spacer(modifier = Modifier.height(24.dp))
-//
-//                // Botón de iniciar sesión
-//                Button(
-//                    colors = ButtonDefaults.buttonColors(
-//                        containerColor = MaterialTheme.colorScheme.primary,
-//                        contentColor = MaterialTheme.colorScheme.onPrimary
-//                    ),
-//                    onClick = {
-//                        // Validaciones básicas
-//                        if (email.isBlank() || password.isBlank()) {
-//                            errorMessage = "Todos los campos son obligatorios."
-//                            return@Button
-//                        }
-//                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-//                            errorMessage = "Introduce un correo electrónico válido."
-//                            return@Button
-//                        }
-//
-//                        // Validar credenciales
-//                        val valid = userViewModel.validateUser(email, password)
-//                        if (valid) {
-//                            coroutineScope.launch {
-//                                snackbarHostState.showSnackbar("Login exitoso. ¡Bienvenido!")
-//                                onNavigateToHome()
-//                            }
-//                        } else {
-//                            errorMessage = "Credenciales inválidas. Inténtalo de nuevo."
-//                        }
-//                    },
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    Text("Iniciar Sesión")
-//                }
-//
-//                // Mostrar mensaje de error si existe
-//                if (errorMessage != null) {
-//                    Spacer(modifier = Modifier.height(16.dp))
-//                    Text(
-//                        text = errorMessage ?: "",
-//                        color = MaterialTheme.colorScheme.error,
-//                        style = MaterialTheme.typography.bodyMedium
-//                    )
-//                }
-//
-//                Spacer(modifier = Modifier.height(24.dp))
-//
-//                // Enlace a la pantalla de registro
-//                TextButton(onClick = { onNavigateToRegister() },
-//                    colors = ButtonDefaults.textButtonColors(
-//                        contentColor = Color.White
-//                    )
-//                    ) {
-//                    Text("¿No tienes una cuenta? Regístrate")
-//                }
-//
-//                // Enlace a la pantalla de recuperar contraseña
-//                TextButton(onClick = { onNavigateToRecover() },
-//                    colors = ButtonDefaults.textButtonColors(
-//                        contentColor = Color.White
-//                    )
-//                    ) {
-//                    Text("¿Olvidaste tu contraseña?")
-//                }
-//            }
-//        }
-//    }
-//}
 @Composable
 fun LoginScreen(
     onNavigateToRecover: () -> Unit,
@@ -223,10 +62,11 @@ fun LoginScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
+        val sinusar = paddingValues
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+
         ) {
             // Imagen de fondo
             Image(

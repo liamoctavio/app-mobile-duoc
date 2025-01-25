@@ -86,9 +86,12 @@ class MainActivity : ComponentActivity() {
 
                         // Pantalla de Registro
                         composable("register_screen") {
+                            val context = LocalContext.current // Obtén el contexto actual
                             RegisterScreen(
                                 onNavigateBack = { navController.popBackStack() },
-                                userViewModel = userViewModel
+                                userViewModel = userViewModel,
+                                context = context // Pasa el contexto aquí
+
                             )
                         }
                         // Pantalla Home

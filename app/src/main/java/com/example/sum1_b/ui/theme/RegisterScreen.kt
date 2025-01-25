@@ -14,135 +14,19 @@ import com.example.sum1_b.R
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.ui.Alignment
+import android.speech.tts.TextToSpeech
+import android.content.Context
+import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Color
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun RegisterScreen(
-//    onNavigateBack: () -> Unit,
-//    userViewModel: UserViewModel = viewModel()
-//) {
-//    // Estados para los campos de texto
-//    var username by remember { mutableStateOf("") }
-//    var email by remember { mutableStateOf("") }
-//    var password by remember { mutableStateOf("") }
-//    var confirmPassword by remember { mutableStateOf("") }
-//
-//    // Estado para mostrar mensajes de error
-//    var errorMessage by remember { mutableStateOf<String?>(null) }
-//
-//    // Snackbar para retroalimentación
-//    val snackbarHostState = remember { SnackbarHostState() }
-//    val coroutineScope = rememberCoroutineScope()
-//
-//    Scaffold(
-//        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-//    ) { paddingValues ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp)
-//                .padding(paddingValues),
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Text(
-//                text = "Registro",
-//                style = MaterialTheme.typography.headlineLarge
-//            )
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            // Campo de Username
-//            OutlinedTextField(
-//                value = username,
-//                onValueChange = { username = it },
-//                label = { Text("Nombre de Usuario") },
-//                singleLine = true,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Campo de Email
-//            OutlinedTextField(
-//                value = email,
-//                onValueChange = { email = it },
-//                label = { Text("Correo Electrónico") },
-//                singleLine = true,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Campo de Contraseña
-//            OutlinedTextField(
-//                value = password,
-//                onValueChange = { password = it },
-//                label = { Text("Contraseña") },
-//                singleLine = true,
-//                visualTransformation = PasswordVisualTransformation(),
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Campo de Confirmar Contraseña
-//            OutlinedTextField(
-//                value = confirmPassword,
-//                onValueChange = { confirmPassword = it },
-//                label = { Text("Confirmar Contraseña") },
-//                singleLine = true,
-//                visualTransformation = PasswordVisualTransformation(),
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            // Botón de Registro
-//            Button(
-//                onClick = {
-//                    // Validaciones básicas
-//                    if (username.isBlank() || email.isBlank() || password.isBlank()) {
-//                        errorMessage = "Todos los campos son obligatorios."
-//                        return@Button
-//                    }
-//                    if (password != confirmPassword) {
-//                        errorMessage = "Las contraseñas no coinciden."
-//                        return@Button
-//                    }
-//                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-//                        errorMessage = "Introduce un correo electrónico válido."
-//                        return@Button
-//                    }
-//
-//                    // Intentar registrar el usuario
-//                    val success = userViewModel.registerUser(username, email, password)
-//                    if (success) {
-//                        coroutineScope.launch {
-//                            snackbarHostState.showSnackbar("Registro exitoso. ¡Bienvenido $username!")
-//                            onNavigateBack()
-//                        }
-//                    } else {
-//                        errorMessage = "El correo electrónico ya está registrado."
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Registrarse")
-//            }
-//
-//            // Mostrar mensaje de error si existe
-//            if (errorMessage != null) {
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Text(
-//                    text = errorMessage ?: "",
-//                    color = MaterialTheme.colorScheme.error,
-//                    style = MaterialTheme.typography.bodyMedium
-//                )
-//            }
-//        }
-//    }
-//}
-
-
 @Composable
 fun RegisterScreen(
     onNavigateBack: () -> Unit,
-    userViewModel: UserViewModel = viewModel()
+    userViewModel: UserViewModel = viewModel(),
+    context: Context
 ) {
     // Estados para los campos de texto
     var username by remember { mutableStateOf("") }
@@ -157,13 +41,31 @@ fun RegisterScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    // Inicializar TextToSpeech
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+
+    LaunchedEffect(key1 = Unit) {
+        tts = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.language = Locale.getDefault()
+            }
+        }
+    }
+
+    // Liberar recursos de TTS al salir
+    DisposableEffect(Unit) {
+        onDispose {
+            tts?.shutdown()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
+        val sinusar = paddingValues
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
             // Imagen de fondo
             Image(
@@ -177,16 +79,29 @@ fun RegisterScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
+                    .padding(16.dp)
+                    .clickable {
+                        val textToSpeak = "Formulario de registro seleccionado. " +
+                            "Los campos son: Nombre de Usuario, Correo Electrónico, Contraseña y Confirmar Contraseña."
+                        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
+                    },
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage ?: "",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 16.dp) // Espacio para separar del resto
+                    )
+                }
                 Text(
                     text = "Registro",
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onPrimary // Texto blanco
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Campo de Nombre de Usuario
                 StyleTextField(
@@ -220,21 +135,24 @@ fun RegisterScreen(
                     label = "Confirmar Contraseña",
                     isPassword = true
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Botón de Registro
                 Button(
                     onClick = {
                         if (username.isBlank() || email.isBlank() || password.isBlank()) {
                             errorMessage = "Todos los campos son obligatorios."
+                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             return@Button
                         }
                         if (password != confirmPassword) {
                             errorMessage = "Las contraseñas no coinciden."
+                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             return@Button
                         }
                         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                             errorMessage = "Introduce un correo electrónico válido."
+                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             return@Button
                         }
 
@@ -242,6 +160,7 @@ fun RegisterScreen(
                         if (success) {
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar("Registro exitoso. ¡Bienvenido $username!")
+                                tts?.speak("Registro, Exitoso", TextToSpeech.QUEUE_FLUSH, null, null)
                                 onNavigateBack()
                             }
                         } else {
@@ -252,20 +171,22 @@ fun RegisterScreen(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
                 ) {
                     Text("Registrarse")
                 }
 
                 // Mostrar mensaje de error si existe
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = errorMessage ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+//                if (errorMessage != null) {
+//                    Spacer(modifier = Modifier.height(16.dp))
+//                    Text(
+//                        text = errorMessage ?: "",
+//                        color = Color.White,
+//                        style = MaterialTheme.typography.bodyMedium,
+//                    )
+//                }
             }
         }
     }

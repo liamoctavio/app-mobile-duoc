@@ -33,7 +33,8 @@ fun RecoverPasswordScreen(
     ) {
         Text(
             text = "Recuperar Contraseña",
-            style = MaterialTheme.typography.headlineLarge
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.primary // Use primary color for emphasis
         )
         Spacer(modifier = Modifier.height(24.dp))
 
