@@ -28,20 +28,16 @@ fun RegisterScreen(
     userViewModel: UserViewModel = viewModel(),
     context: Context
 ) {
-    // Estados para los campos de texto
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // Estado para mostrar mensajes de error
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Snackbar para retroalimentación
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Inicializar TextToSpeech
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
 
     LaunchedEffect(key1 = Unit) {
@@ -52,7 +48,6 @@ fun RegisterScreen(
         }
     }
 
-    // Liberar recursos de TTS al salir
     DisposableEffect(Unit) {
         onDispose {
             tts?.shutdown()
@@ -67,7 +62,6 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // Imagen de fondo
             Image(
                 painter = painterResource(id = R.drawable.fondo), // Imagen de fondo
                 contentDescription = "Fondo temático violeta",
@@ -75,7 +69,6 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Contenido del registro
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -103,7 +96,6 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo de Nombre de Usuario
                 StyleTextField(
                     value = username,
                     onValueChange = { username = it },
@@ -111,7 +103,6 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo de Correo Electrónico
                 StyleTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -119,7 +110,6 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo de Contraseña
                 StyleTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -128,7 +118,6 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo de Confirmar Contraseña
                 StyleTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
@@ -137,7 +126,6 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Botón de Registro
                 Button(
                     onClick = {
                         if (username.isBlank() || email.isBlank() || password.isBlank()) {
@@ -178,15 +166,6 @@ fun RegisterScreen(
                     Text("Registrarse")
                 }
 
-                // Mostrar mensaje de error si existe
-//                if (errorMessage != null) {
-//                    Spacer(modifier = Modifier.height(16.dp))
-//                    Text(
-//                        text = errorMessage ?: "",
-//                        color = Color.White,
-//                        style = MaterialTheme.typography.bodyMedium,
-//                    )
-//                }
             }
         }
     }
