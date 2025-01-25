@@ -11,6 +11,22 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+
+
+import androidx.compose.material3.lightColorScheme
+
+import androidx.compose.ui.graphics.Color
+
+val Primary = Color(0xFFBA68C8)      // Amatista claro
+val Secondary = Color(0xFFFF4081)    // Rosa brillante
+val Background = Color.Transparent   // Fondo degradado ya visible
+val Surface = Color(0xFF6A1B9A)      // Violeta intenso
+val Error = Color(0xFFD32F2F)        // Rojo para errores, no es necesario cambiar
+val OnPrimary = Color(0xFFFFFFFF)    // Blanco para contrastar con el Primary
+val OnSecondary = Color(0xFFFFFFFF)  // Blanco para elementos secundarios
+val OnBackground = Color(0xFFFFFFFF) // Blanco para elementos sobre el fondo
+val OnSurface = Color(0xFFFFFFFF)    // Bl
+
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
@@ -33,22 +49,38 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+
 @Composable
 fun Sum1_bTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) {
+        darkColorScheme( // Cambiar por darkColorScheme si se define uno
+            primary = Primary,
+            secondary = Secondary,
+            background = Background,
+            surface = Surface,
+            error = Error,
+            onPrimary = OnPrimary,
+            onSecondary = OnSecondary,
+            onBackground = OnBackground,
+            onSurface = OnSurface
+        )
+    } else {
+        lightColorScheme(
+            primary = Primary,
+            secondary = Secondary,
+            background = Background,
+            surface = Surface,
+            error = Error,
+            onPrimary = OnPrimary,
+            onSecondary = OnSecondary,
+            onBackground = OnBackground,
+            onSurface = OnSurface
+        )
+}
 
     MaterialTheme(
         colorScheme = colorScheme,
