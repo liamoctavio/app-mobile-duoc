@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 //import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.unit.dp
 
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         // Pantalla de Login
                         composable("login_screen") {
+                            val context = LocalContext.current // Obtén el contexto actual
                             LoginScreen(
                                 onNavigateToRecover = {
                                     // Navegamos a la pantalla de recuperar
@@ -65,7 +67,9 @@ class MainActivity : ComponentActivity() {
                                         popUpTo("login_screen") { inclusive = true }
                                     }
                                 },
-                                userViewModel = userViewModel
+                                userViewModel = userViewModel,
+                                context = context // Pasa el contexto aquí
+
                             )
                         }
 
