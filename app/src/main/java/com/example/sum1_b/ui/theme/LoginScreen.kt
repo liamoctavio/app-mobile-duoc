@@ -32,7 +32,7 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToHome: () -> Unit,
     userViewModel: UserViewModel = viewModel(),
-    context: Context // Pasar el contexto como parámetro
+    context: Context
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -42,11 +42,9 @@ fun LoginScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Inicializar TextToSpeech
-    // Estado para TextToSpeech
+
     var tts: TextToSpeech? by remember { mutableStateOf(null) }
 
-    // Inicialización de TextToSpeech
     DisposableEffect(Unit) {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -54,7 +52,7 @@ fun LoginScreen(
             }
         }
         onDispose {
-            tts?.shutdown() // Libera recursos al salir de la pantalla
+            tts?.shutdown()
         }
     }
 
@@ -67,7 +65,6 @@ fun LoginScreen(
                 .fillMaxSize()
 
         ) {
-            // Imagen de fondo
             Image(
                 painter = painterResource(id = R.drawable.fondo),
                 contentDescription = "Fondo temático violeta",
@@ -75,7 +72,6 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Contenido del login
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -97,7 +93,6 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo de texto para el email
                 StyleTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -108,7 +103,6 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo de texto para la contraseña
                 StyleTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -122,7 +116,6 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón de iniciar sesión
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -153,7 +146,6 @@ fun LoginScreen(
                     Text("Iniciar Sesión")
                 }
 
-                // Mostrar mensaje de error si existe
                 if (errorMessage != null) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -165,7 +157,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Enlace a la pantalla de registro
                 TextButton(onClick = { onNavigateToRegister() },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color.White
@@ -174,7 +165,6 @@ fun LoginScreen(
                     Text("¿No tienes una cuenta? Regístrate")
                 }
 
-                // Enlace a la pantalla de recuperar contraseña
                 TextButton(onClick = { onNavigateToRecover() },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color.White
@@ -186,7 +176,6 @@ fun LoginScreen(
         }
     }
 
-    // Liberar recursos de TextToSpeech
     DisposableEffect(Unit) {
         onDispose {
             tts?.shutdown()
@@ -195,7 +184,7 @@ fun LoginScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class) // Indica que aceptas usar esta API experimental
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StyleTextField(
     value: String,
