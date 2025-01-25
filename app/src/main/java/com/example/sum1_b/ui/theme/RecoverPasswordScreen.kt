@@ -64,8 +64,6 @@ fun RecoverPasswordScreen(
                     Toast.makeText(context, "No hay app de correo instalada", Toast.LENGTH_SHORT).show()
                 }
 
-                // Llamada al callback si lo necesitas
-                // onRecoveryRequested(email)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
