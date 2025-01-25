@@ -57,7 +57,7 @@ fun Sum1_bTheme(
 ) {
 
     val colorScheme = if (darkTheme) {
-        darkColorScheme( // Cambiar por darkColorScheme si se define uno
+        darkColorScheme(
             primary = Primary,
             secondary = Secondary,
             background = Background,
