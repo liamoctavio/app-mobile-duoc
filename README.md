@@ -30,4 +30,4 @@ Sigue estos pasos para clonar y ejecutar el proyecto en tu entorno local:
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/to-do-list-app.git](https://github.com/liamoctavio/app-mobile-duoc.git
+   git clone https://github.com/tu-usuario/to-do-list-app.git
