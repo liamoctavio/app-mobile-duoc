@@ -75,7 +75,7 @@ fun HomeScreen(
                 onClick = {
                     if (newTask.isNotBlank()) {
                         tasks = tasks + newTask
-                        newTask = "" // Limpia el campo después de agregar
+                        newTask = ""
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
