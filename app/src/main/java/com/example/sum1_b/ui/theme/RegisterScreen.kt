@@ -144,15 +144,16 @@ fun RegisterScreen(
                             return@Button
                         }
 
-                        val success = userViewModel.registerUser(username, email, password)
-                        if (success) {
-                            coroutineScope.launch {
+                        coroutineScope.launch {
+                            val error = userViewModel.registerUser(username, email, password)
+                            if (error == null) {
                                 snackbarHostState.showSnackbar("Registro exitoso. ¡Bienvenido $username!")
-                                tts?.speak("Registro, Exitoso", TextToSpeech.QUEUE_FLUSH, null, null)
-                                onNavigateBack()
+                                tts?.speak("Registro Exitoso", TextToSpeech.QUEUE_FLUSH, null, null)
+                                onNavigateBack() // Volver a la pantalla anterior
+                            } else {
+                                errorMessage = error
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             }
-                        } else {
-                            errorMessage = "El correo electrónico ya está registrado."
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

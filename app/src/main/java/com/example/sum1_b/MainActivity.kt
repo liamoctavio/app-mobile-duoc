@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,26 +53,43 @@ class MainActivity : ComponentActivity() {
                     ) {
                         // Pantalla de Login
                         composable("login_screen") {
-                            val context = LocalContext.current // Obtén el contexto actual
                             LoginScreen(
-                                onNavigateToRecover = {
-                                    // Navegamos a la pantalla de recuperar
-                                    navController.navigate("recover_screen")
-                                },
                                 onNavigateToRegister = {
-                                    // Navegamos a la pantalla de registro
-                                    navController.navigate("register_screen")
+                                    navController.navigate("register_screen") // ⚠️ Navega a la pantalla de registro
                                 },
-                                onNavigateToHome = {
-                                    navController.navigate("home_screen") {
+                                onNavigateToHome = { userId -> // ✅ Recibe el userId y navega a HomeScreen
+                                    navController.navigate("home_screen/$userId") {
                                         popUpTo("login_screen") { inclusive = true }
                                     }
                                 },
+                                onNavigateToRecover = {
+                                    navController.navigate("recover_screen") // ⚠️ Si tienes recuperación de contraseña
+                                },
                                 userViewModel = userViewModel,
-                                context = context // Pasa el contexto aquí
-
+                                context = LocalContext.current
                             )
                         }
+//                        composable("login_screen") {
+//                            val context = LocalContext.current // Obtén el contexto actual
+//                            LoginScreen(
+//                                onNavigateToRecover = {
+//                                    // Navegamos a la pantalla de recuperar
+//                                    navController.navigate("recover_screen")
+//                                },
+//                                onNavigateToRegister = {
+//                                    // Navegamos a la pantalla de registro
+//                                    navController.navigate("register_screen")
+//                                },
+//                                onNavigateToHome = {
+//                                    navController.navigate("home_screen") {
+//                                        popUpTo("login_screen") { inclusive = true }
+//                                    }
+//                                },
+//                                userViewModel = userViewModel,
+//                                context = context // Pasa el contexto aquí
+//
+//                            )
+//                        }
 
                         // Pantalla de Recuperar Contraseña
                         composable("recover_screen") {
@@ -95,15 +113,45 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         // Pantalla Home
-                        composable("home_screen"){
-                            HomeScreen(
-                                onLogout = {
-                                    navController.navigate("login_screen"){
-                                        popUpTo("home_screen"){ inclusive = true}
+                        composable("home_screen/{userId}") { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+
+                            if (userId.isNotBlank()) {
+                                HomeScreen(
+                                    userId = userId,
+                                    onLogout = {
+                                        FirebaseAuth.getInstance().signOut() // ⚠️ Cierra sesión en Firebase
+                                        navController.navigate("login_screen") {
+                                            popUpTo("home_screen") { inclusive = true }
+                                        }
                                     }
+                                )
+                            } else {
+                                // ⚠️ Si no hay userId, vuelve al login
+                                navController.navigate("login_screen") {
+                                    popUpTo("home_screen") { inclusive = true }
                                 }
-                            )
+                            }
                         }
+//                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+//                        composable("home_screen"){
+//                            if (userId.isNotBlank()) {
+//                                HomeScreen(
+//                                    userId = userId,  // ✅ Pasar el userId de Firebase
+//                                    onLogout = {
+//                                        FirebaseAuth.getInstance().signOut() // Cierra sesión en Firebase
+//                                        navController.navigate("login_screen") {
+//                                            popUpTo("home_screen") { inclusive = true }
+//                                        }
+//                                    }
+//                                )
+//                            } else {
+//                                // Si no hay usuario autenticado, volver a login
+//                                navController.navigate("login_screen") {
+//                                    popUpTo("home_screen") { inclusive = true }
+//                                }
+//                            }
+//                        } //aa
                     }
                 }
             }

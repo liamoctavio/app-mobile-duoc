@@ -24,13 +24,15 @@ import androidx.compose.ui.res.painterResource
 import com.example.sum1_b.R
 import android.speech.tts.TextToSpeech
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import java.util.*
 
 @Composable
 fun LoginScreen(
     onNavigateToRecover: () -> Unit,
     onNavigateToRegister: () -> Unit,
-    onNavigateToHome: () -> Unit,
+    onNavigateToHome: (String) -> Unit,
     userViewModel: UserViewModel = viewModel(),
     context: Context
 ) {
@@ -128,18 +130,28 @@ fun LoginScreen(
                             tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             return@Button
                         }
-
-                        val valid = userViewModel.validateUser(email, password)
-                        if (valid) {
-                            coroutineScope.launch {
+                        coroutineScope.launch {
+                            val valid = userViewModel.loginUser(email, password)
+                            if (valid) {
                                 snackbarHostState.showSnackbar("Login exitoso. ¡Bienvenido!")
                                 tts?.speak("Login exitoso. Bienvenido", TextToSpeech.QUEUE_FLUSH, null, null)
-                                onNavigateToHome()
+
+                                // 🔹 Espera un momento antes de obtener el userId para asegurarse de que Firebase actualizó el usuario
+                                delay(1000) // Pequeño delay para asegurar que FirebaseAuth se actualizó
+
+                                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "" // ⚠️ Obtiene el ID del usuario autenticado
+                                if (userId.isNotBlank()) {
+                                    onNavigateToHome(userId) // ⚠️ Pasar el userId al navegar
+                                } else {
+                                    errorMessage = "Error al obtener usuario. Inténtalo de nuevo."
+                                    tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                }
+                            } else {
+                                errorMessage = "Credenciales inválidas. Inténtalo de nuevo."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                             }
-                        } else {
-                            errorMessage = "Credenciales inválidas. Inténtalo de nuevo."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                         }
+
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -49,6 +50,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.auth.ktx)
+//    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -81,7 +86,16 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     // Este es el importante para Icons (material-icons-extended)
-    implementation("androidx.compose.material:material-icons-extended")
+//    implementation("androidx.compose.material:material-icons-extended")
+//
+//    implementation("com.google.firebase:firebase-bom:32.0.0")
+//    implementation("com.google.firebase:firebase-database-ktx")
+
+    implementation("org.osmdroid:osmdroid-android:6.1.16") // Última versión estable de osmdroid
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+//    implementation ("com.github.maplibre:maplibre-gl-native:main-SNAPSHOT") // Usa la versión más reciente
+
+//    implementation("com.mapbox.maps:android:11.9.2")
 
 
 
