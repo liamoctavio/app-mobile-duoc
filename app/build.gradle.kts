@@ -6,6 +6,7 @@ plugins {
 }
 
 android {
+
     namespace = "com.example.sum1_b"
     compileSdk = 35
 
@@ -18,6 +19,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
+
 
     buildTypes {
         release {
@@ -54,6 +62,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
 //    implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
+    implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -97,6 +106,7 @@ dependencies {
 
 //    implementation("com.mapbox.maps:android:11.9.2")
 
+    testImplementation("androidx.test:core:1.5.0")
 
 
 }

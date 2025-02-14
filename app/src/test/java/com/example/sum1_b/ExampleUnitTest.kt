@@ -16,48 +16,77 @@ package com.example.sum1_b
 //    }
 //}
 
+//import android.content.Context
+//import androidx.test.core.app.ApplicationProvider
+//import com.example.sum1_b.viewmodel.UserViewModel
+//import com.google.firebase.FirebaseApp
+//import kotlinx.coroutines.runBlocking
+//import org.junit.Assert.assertFalse
+//import org.junit.Assert.assertNull
+//import org.junit.Assert.assertTrue
+//import org.junit.Before
+//import org.junit.Test
+//
+//
+//class UserViewModelTest {
+//
+//    private lateinit var userViewModel: UserViewModel
+//
+//    @Before
+//    fun setup() {
+//        val appContext = ApplicationProvider.getApplicationContext<Context>()
+//        // Inicializa Firebase en el contexto de la prueba
+//        FirebaseApp.initializeApp(appContext)
+//        userViewModel = UserViewModel()
+//    }
+//
+//    @Test
+//    fun testRegisterUser_Success() = runBlocking {
+//        // Se espera que al registrar un usuario nuevo no se retorne error (null indica éxito)
+//        val result = userViewModel.registerUser("TestUser", "test@example.com", "password")
+//        // En este ejemplo, asumimos que un resultado null significa que se registró exitosamente.
+//        assertNull("El registro debería ser exitoso y no retornar error", result)
+//    }
+//
+//}
+
+
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
 import com.example.sum1_b.viewmodel.UserViewModel
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class UserViewModelTest {
 
     private lateinit var userViewModel: UserViewModel
 
     @Before
     fun setup() {
-        // Inicializa tu ViewModel (aquí se podría configurar un estado inicial si lo necesitas)
+        val appContext = ApplicationProvider.getApplicationContext<Context>()
+        if (FirebaseApp.getApps(appContext).isEmpty()) {
+            FirebaseApp.initializeApp(appContext)
+        }
         userViewModel = UserViewModel()
     }
 
-    @Test
-    fun testRegisterUser_Success() = runBlocking {
-        // Se espera que al registrar un usuario nuevo no se retorne error (null indica éxito)
-        val result = userViewModel.registerUser("TestUser", "test@example.com", "password")
-        // En este ejemplo, asumimos que un resultado null significa que se registró exitosamente.
-        assertNull("El registro debería ser exitoso y no retornar error", result)
-    }
-
-
-
 //    @Test
-//    fun testRegisterUser_Failure() {
-//        // Registra un usuario
-//        userViewModel.registerUser("Juan", "juan@example.com", "password123")
-//        // Intenta registrar otro usuario con el mismo correo
-//        val result = userViewModel.registerUser("Juan2", "juan@example.com", "password456")
-//        assertFalse("No se debe permitir registrar un usuario con correo duplicado", result)
+//    fun testRegisterUser_Success() = runBlocking {
+//        // Se espera que al registrar un usuario nuevo no se retorne error (null indica éxito)
+//        val result = userViewModel.registerUser("TestUser", "test@example.com", "password")
+//        // En este ejemplo, asumimos que un resultado null significa que se registró exitosamente.
+//        assertNull("El registro debería ser exitoso y no retornar error", result)
 //    }
-//
-//    @Test
-//    fun testValidateUser() {
-//        // Registra un usuario y verifica que la validación funcione
-//        userViewModel.registerUser("Octavio", "octavio1@gmail.com", "octavio")
-//        val isValid = userViewModel.validateUser("octavio1@gmail.com", "octavio")
-//        assertTrue("El usuario debe validarse correctamente", isValid)
-//    }
+        @Test
+        fun testRegisterUser_Success() = runBlocking {
+            val result = userViewModel.registerUser("TestUser", "test@example.com", "password")
+            assertNull("El registro debería ser exitoso y no retornar error", result)
+        }
 }
+

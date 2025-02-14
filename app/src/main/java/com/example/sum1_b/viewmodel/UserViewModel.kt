@@ -82,7 +82,7 @@ class UserViewModel : ViewModel() {
             }
     }
 
-        suspend fun loginUser(email: String, password: String): Boolean {
+    suspend fun loginUser(email: String, password: String): Boolean {
             return try {
                 auth.signInWithEmailAndPassword(email, password).await()
                 auth.currentUser != null
@@ -90,7 +90,7 @@ class UserViewModel : ViewModel() {
                 println("❌ Error al iniciar sesión: ${e.message}")
                 false
             }
-        }
+    }
 
 
     suspend fun registerUser(username: String, email: String, password: String): String? {
