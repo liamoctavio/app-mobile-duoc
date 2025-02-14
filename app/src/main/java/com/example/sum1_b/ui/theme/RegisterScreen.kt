@@ -17,11 +17,12 @@ import androidx.compose.ui.Alignment
 import android.speech.tts.TextToSpeech
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.Color
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun RegisterScreen(
     onNavigateBack: () -> Unit,
@@ -34,6 +35,8 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    var isLoading by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -54,119 +57,134 @@ fun RegisterScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        val sinusar = paddingValues
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.fondo), // Imagen de fondo
-                contentDescription = "Fondo temático violeta",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Column(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .clickable {
-                        val textToSpeak = "Formulario de registro seleccionado. " +
-                            "Los campos son: Nombre de Usuario, Correo Electrónico, Contraseña y Confirmar Contraseña."
-                        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
-                    },
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(paddingValues)
             ) {
-                if (errorMessage != null) {
-                    Text(
-                        text = errorMessage ?: "",
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 16.dp) // Espacio para separar del resto
-                    )
-                }
-                Text(
-                    text = "Registro",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onPrimary // Texto blanco
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StyleTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = "Nombre de Usuario"
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StyleTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = "Correo Electrónico"
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StyleTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = "Contraseña",
-                    isPassword = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StyleTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    label = "Confirmar Contraseña",
-                    isPassword = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        if (username.isBlank() || email.isBlank() || password.isBlank()) {
-                            errorMessage = "Todos los campos son obligatorios."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            return@Button
-                        }
-                        if (password != confirmPassword) {
-                            errorMessage = "Las contraseñas no coinciden."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            return@Button
-                        }
-                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                            errorMessage = "Introduce un correo electrónico válido."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            return@Button
-                        }
-
-                        coroutineScope.launch {
-                            val error = userViewModel.registerUser(username, email, password)
-                            if (error == null) {
-                                snackbarHostState.showSnackbar("Registro exitoso. ¡Bienvenido $username!")
-                                tts?.speak("Registro Exitoso", TextToSpeech.QUEUE_FLUSH, null, null)
-                                onNavigateBack() // Volver a la pantalla anterior
-                            } else {
-                                errorMessage = error
-                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
+                Image(
+                    painter = painterResource(id = R.drawable.fondo),
+                    contentDescription = "Fondo temático violeta",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text("Registrarse")
-                }
+                        .aspectRatio(16 / 30f) //
+                )
 
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .clickable {
+                            val textToSpeak = "Formulario de registro seleccionado. Los campos son: Nombre de Usuario, Correo Electrónico, Contraseña y Confirmar Contraseña."
+                            tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
+                        },
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage ?: "",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+                    Text(
+                        text = "Registro",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StyleTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        label = "Nombre de Usuario"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StyleTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = "Correo Electrónico"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StyleTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = "Contraseña",
+                        isPassword = true
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StyleTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = "Confirmar Contraseña",
+                        isPassword = true
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            if (username.isBlank() || email.isBlank() || password.isBlank()) {
+                                errorMessage = "Todos los campos son obligatorios."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                return@Button
+                            }
+                            if (password != confirmPassword) {
+                                errorMessage = "Las contraseñas no coinciden."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                return@Button
+                            }
+                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                errorMessage = "Introduce un correo electrónico válido."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                return@Button
+                            }
+                            // Activa la pantalla de carga
+                            isLoading = true
+                            coroutineScope.launch {
+                                val error = userViewModel.registerUser(username, email, password)
+                                if (error == null) {
+                                    snackbarHostState.showSnackbar("Registro exitoso. ¡Bienvenido $username!")
+                                    tts?.speak("Registro Exitoso", TextToSpeech.QUEUE_FLUSH, null, null)
+                                    onNavigateBack()
+                                } else {
+                                    errorMessage = error
+                                    tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                }
+                                isLoading = false
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text("Registrarse")
+                    }
+                }
+            }
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
     }

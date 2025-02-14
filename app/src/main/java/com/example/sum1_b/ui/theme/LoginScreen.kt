@@ -1,5 +1,6 @@
 package com.example.sum1_b.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -24,9 +25,20 @@ import androidx.compose.ui.res.painterResource
 import com.example.sum1_b.R
 import android.speech.tts.TextToSpeech
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Mic
+import androidx.core.app.ActivityCompat
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import java.util.*
+
 
 @Composable
 fun LoginScreen(
@@ -41,9 +53,10 @@ fun LoginScreen(
     var showPassword by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var isLoading by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
 
     var tts: TextToSpeech? by remember { mutableStateOf(null) }
 
@@ -53,137 +66,209 @@ fun LoginScreen(
                 tts?.language = Locale.getDefault()
             }
         }
-        onDispose {
-            tts?.shutdown()
-        }
+        onDispose { tts?.shutdown() }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        val sinusar = paddingValues
-        Box(
-            modifier = Modifier
+    val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
+    var isListening by remember { mutableStateOf(false) }
+    val recognitionListener = object : RecognitionListener {
+        override fun onResults(results: Bundle?) {
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            if (!matches.isNullOrEmpty()) {
+                email = matches[0]
+            }
+            isListening = false
+        }
+        override fun onError(error: Int) {
+            Toast.makeText(context, "Error de reconocimiento: $error", Toast.LENGTH_SHORT).show()
+            isListening = false
+        }
+        override fun onReadyForSpeech(params: Bundle?) {}
+        override fun onBeginningOfSpeech() {}
+        override fun onRmsChanged(rmsdB: Float) {}
+        override fun onBufferReceived(buffer: ByteArray?) {}
+        override fun onEndOfSpeech() {}
+        override fun onPartialResults(partialResults: Bundle?) {}
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    }
+    LaunchedEffect(Unit) { speechRecognizer.setRecognitionListener(recognitionListener) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        ) { paddingValues ->
+
+            Box(modifier = Modifier
                 .fillMaxSize()
-
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.fondo),
-                contentDescription = "Fondo temático violeta",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Logo de la app",
+                .padding(paddingValues)) {
+                Image(
+                    painter = painterResource(id = R.drawable.fondo),
+                    contentDescription = "Fondo temático violeta",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(64.dp)
-                        .padding(bottom = 24.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                        .fillMaxWidth()
+                        .aspectRatio(16 / 30f) //
                 )
-                Text(
-                    text = "Iniciar Sesión",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                Spacer(modifier = Modifier.height(24.dp))
 
-                StyleTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = "Correo Electrónico",
-                    leadingIcon = {
-                        Icon(Icons.Default.Email, contentDescription = "Icono de correo")
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Logo de la app",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .padding(bottom = 24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Iniciar Sesión",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StyleTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Correo Electrónico",
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = "Icono de correo")
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        if (!isListening) {
+                                            if (ActivityCompat.checkSelfPermission(
+                                                    context, android.Manifest.permission.RECORD_AUDIO
+                                                ) != PackageManager.PERMISSION_GRANTED
+                                            ) {
+                                                ActivityCompat.requestPermissions(
+                                                    context as Activity,
+                                                    arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                                                    1002
+                                                )
+                                            } else {
+                                                isListening = true
+                                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                                    putExtra(
+                                                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                                                    )
+                                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES")
+                                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Dicta tu correo")
+                                                }
+                                                speechRecognizer.startListening(intent)
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Mic,
+                                        contentDescription = "Dictar correo",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+                        )
                     }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                StyleTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = "Contraseña",
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = "Icono de candado")
-                    },
-                    isPassword = true,
-                    showPassword = showPassword,
-                    onPasswordToggle = { showPassword = !showPassword }
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+                    StyleTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = "Contraseña",
+                        leadingIcon = {
+                            Icon(Icons.Default.Lock, contentDescription = "Icono de candado")
+                        },
+                        isPassword = true,
+                        showPassword = showPassword,
+                        onPasswordToggle = { showPassword = !showPassword }
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                Button(
-                    onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            errorMessage = "Todos los campos son obligatorios."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            return@Button
-                        }
-                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                            errorMessage = "Introduce un correo electrónico válido."
-                            tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
-                            return@Button
-                        }
-                        coroutineScope.launch {
-                            val valid = userViewModel.loginUser(email, password)
-                            if (valid) {
-                                snackbarHostState.showSnackbar("Login exitoso. ¡Bienvenido!")
-                                tts?.speak("Login exitoso. Bienvenido", TextToSpeech.QUEUE_FLUSH, null, null)
+                    Button(
+                        onClick = {
+                            if (email.isBlank() || password.isBlank()) {
+                                errorMessage = "Todos los campos son obligatorios."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                return@Button
+                            }
+                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                errorMessage = "Introduce un correo electrónico válido."
+                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                return@Button
+                            }
 
-                                // 🔹 Espera un momento antes de obtener el userId para asegurarse de que Firebase actualizó el usuario
-                                delay(1000) // Pequeño delay para asegurar que FirebaseAuth se actualizó
-
-                                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "" // ⚠️ Obtiene el ID del usuario autenticado
-                                if (userId.isNotBlank()) {
-                                    onNavigateToHome(userId) // ⚠️ Pasar el userId al navegar
+                            isLoading = true
+                            coroutineScope.launch {
+                                val valid = userViewModel.loginUser(email, password)
+                                if (valid) {
+                                    snackbarHostState.showSnackbar("Login exitoso. ¡Bienvenido!")
+                                    tts?.speak("Login exitoso. Bienvenido", TextToSpeech.QUEUE_FLUSH, null, null)
+                                    delay(1000)
+                                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                                    if (userId.isNotBlank()) {
+                                        onNavigateToHome(userId)
+                                    } else {
+                                        errorMessage = "Error al obtener usuario. Inténtalo de nuevo."
+                                        tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                    }
                                 } else {
-                                    errorMessage = "Error al obtener usuario. Inténtalo de nuevo."
+                                    errorMessage = "Credenciales inválidas. Inténtalo de nuevo."
                                     tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
                                 }
-                            } else {
-                                errorMessage = "Credenciales inválidas. Inténtalo de nuevo."
-                                tts?.speak(errorMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+                                isLoading = false
                             }
-                        }
-
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Iniciar Sesión")
-                }
-
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = errorMessage ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                TextButton(onClick = { onNavigateToRegister() },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color.White
-                    )
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                    Text("¿No tienes una cuenta? Regístrate")
-                }
+                        Text("Iniciar Sesión")
+                    }
 
-                TextButton(onClick = { onNavigateToRecover() },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color.White
-                    )
+                    if (errorMessage != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = errorMessage ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    TextButton(
+                        onClick = { onNavigateToRegister() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                     ) {
-                    Text("¿Olvidaste tu contraseña?")
+                        Text("¿No tienes una cuenta? Regístrate")
+                    }
+
+                    TextButton(
+                        onClick = { onNavigateToRecover() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+                    ) {
+                        Text("¿Olvidaste tu contraseña?")
+                    }
                 }
+            }
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -191,9 +276,11 @@ fun LoginScreen(
     DisposableEffect(Unit) {
         onDispose {
             tts?.shutdown()
+            speechRecognizer.destroy()
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -203,6 +290,7 @@ fun StyleTextField(
     onValueChange: (String) -> Unit,
     label: String,
     leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     isPassword: Boolean = false,
     showPassword: Boolean = false,
     onPasswordToggle: (() -> Unit)? = null
@@ -214,7 +302,7 @@ fun StyleTextField(
         leadingIcon = leadingIcon,
         singleLine = true,
         visualTransformation = if (isPassword && !showPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        trailingIcon = if (isPassword && onPasswordToggle != null) {
+        trailingIcon = trailingIcon ?: if (isPassword && onPasswordToggle != null) {
             {
                 IconButton(onClick = onPasswordToggle) {
                     Icon(
@@ -231,6 +319,7 @@ fun StyleTextField(
             unfocusedLabelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             focusedLeadingIconColor  = MaterialTheme.colorScheme.onBackground,
             unfocusedTrailingIconColor = MaterialTheme.colorScheme.onBackground,
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
         ),
@@ -239,5 +328,6 @@ fun StyleTextField(
             .padding(vertical = 8.dp)
     )
 }
+
 
 

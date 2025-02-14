@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.database.FirebaseDatabase
 import android.location.Location
 import android.Manifest
+import android.R.attr.textColor
 import android.app.Activity
 import android.location.LocationRequest
 import android.os.Build
@@ -32,16 +33,8 @@ import android.os.Looper
 import androidx.compose.ui.viewinterop.AndroidView
 
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
+
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 //import com.google.android.gms.maps.CameraUpdateFactory
@@ -52,12 +45,20 @@ import org.osmdroid.util.GeoPoint
 import com.google.android.gms.location.Priority
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.location.Geocoder
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.widget.Toast
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import com.google.android.gms.location.*
 import java.util.Locale
 
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun HomeScreen(
@@ -66,15 +67,40 @@ fun HomeScreen(
     userViewModel: UserViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
-    val task by userViewModel.tasks.collectAsState()
+    val tasks by userViewModel.tasks.collectAsState()
+    var locationText by remember { mutableStateOf("Ubicación no disponible") }
+
+    var newTask by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
+    var isListening by remember { mutableStateOf(false) }
+
+    val recognitionListener = object : RecognitionListener {
+        override fun onResults(results: Bundle?) {
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            if (!matches.isNullOrEmpty()) {
+                newTask = matches[0]
+            }
+            isListening = false
+        }
+        override fun onError(error: Int) {
+            Toast.makeText(context, "Error de reconocimiento", Toast.LENGTH_SHORT).show()
+            isListening = false
+        }
+        override fun onReadyForSpeech(params: Bundle?) {}
+        override fun onBeginningOfSpeech() {}
+        override fun onRmsChanged(rmsdB: Float) {}
+        override fun onBufferReceived(buffer: ByteArray?) {}
+        override fun onEndOfSpeech() {}
+        override fun onPartialResults(partialResults: Bundle?) {}
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    }
+    speechRecognizer.setRecognitionListener(recognitionListener)
+
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val database = FirebaseDatabase.getInstance().reference.child("locations").child(userId)
     val activity = context as Activity
 
-    var locationText by remember { mutableStateOf("Ubicación no disponible") }
-
-    // 🔹 `LocationCallback` para recibir actualizaciones en tiempo real
     val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             locationResult.lastLocation?.let { location ->
@@ -84,8 +110,6 @@ fun HomeScreen(
                     if (!addressList.isNullOrEmpty()) {
                         val address = addressList[0]
                         locationText = "${address.locality}, ${address.countryName}"
-
-                        // 🔹 Guardar en Firebase para persistencia
                         database.setValue(mapOf("latitude" to location.latitude, "longitude" to location.longitude))
                     } else {
                         locationText = "Ubicación no encontrada"
@@ -97,16 +121,13 @@ fun HomeScreen(
         }
     }
 
-    // 🔹 Cargar tareas desde Firebase al abrir la pantalla (EFECTO SEPARADO)
     LaunchedEffect(userId) {
         userViewModel.getTasksFromFirebase(userId)
     }
 
-    // 🔹 Obtener ubicación y actualizar en tiempo real
     LaunchedEffect(Unit) {
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 activity,
@@ -115,11 +136,10 @@ fun HomeScreen(
             )
         } else {
             val locationRequest = LocationRequest().apply {
-                interval = 5000 // 📍 Actualización cada 5 segundos
+                interval = 5000
                 fastestInterval = 2000
                 priority = Priority.PRIORITY_HIGH_ACCURACY
             }
-
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
                 locationCallback,
@@ -128,19 +148,16 @@ fun HomeScreen(
         }
     }
 
-    // 🔹 Envolver todo en un `Box` para agregar la imagen de fondo
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // 🖼 Imagen de fondo
         Image(
-            painter = painterResource(id = R.drawable.fondo4), // 📌 Asegúrate de que la imagen está en res/drawable/
+            painter = painterResource(id = R.drawable.fondo4),
             contentDescription = "Fondo de la pantalla Home",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // 🔹 Contenido principal sobre la imagen
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -165,7 +182,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Mostrar la ubicación en texto (actualizada en tiempo real)
             Text(
                 text = "Ubicación: $locationText",
                 style = MaterialTheme.typography.headlineSmall,
@@ -174,17 +190,52 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Input para nueva tarea
-            var newTask by remember { mutableStateOf("") }
-            TextField(
-                value = newTask,
-                onValueChange = { newTask = it },
-                label = { Text("Nueva Tarea") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                TextField(
+                    value = newTask,
+                    onValueChange = { newTask = it },
+                    label = { Text("Nueva Tarea") },
+                    modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedTextColor = Color.Black,
+                        unfocusedIndicatorColor = Color.Black,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f)
+
+                    )
+
+                )
+                IconButton(
+                    onClick = {
+                        if (!isListening) {
+                            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+                                != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(
+                                    activity,
+                                    arrayOf(Manifest.permission.RECORD_AUDIO),
+                                    1002
+                                )
+                            } else {
+                                isListening = true
+                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+//                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES") // Forzar español
+                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Habla ahora...")
+                                }
+                                speechRecognizer.startListening(intent)
+                            }
+                        }
+
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Mic, contentDescription = "Hablar", tint = Color(0xFF6200EE) )
+
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Botón para agregar tarea
             Button(
                 onClick = {
                     if (newTask.isNotBlank()) {
@@ -208,7 +259,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 🔹 Lista de tareas
             val tasks by userViewModel.tasks.collectAsState()
             LazyColumn(
                 modifier = Modifier.fillMaxHeight()
