@@ -108,4 +108,15 @@ class UserViewModel : ViewModel() {
         }
     }
 
+    suspend fun getUserNameFromFirebase(userId: String): String {
+        return try {
+            val snapshot = database.child("usuarios").child(userId).get().await()
+            snapshot.child("username").getValue(String::class.java) ?: "Usuario"
+        } catch (e: Exception) {
+            "Usuario"
+        }
+    }
+
+
+
 }

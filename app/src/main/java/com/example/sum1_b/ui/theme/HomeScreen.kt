@@ -54,6 +54,7 @@ import android.speech.SpeechRecognizer
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.navigation.NavController
 import com.google.android.gms.location.*
 import java.util.Locale
 
@@ -63,6 +64,7 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     userId: String,
+    navController: NavController, // ← Agregado
     onLogout: () -> Unit,
     userViewModel: UserViewModel = viewModel(),
     modifier: Modifier = Modifier
@@ -169,7 +171,8 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { /* Navegar a Perfil */ }) {
+
+                Button(onClick = { navController.navigate("profile_screen/$userId") }) {
                     Text("Perfil")
                 }
                 Button(

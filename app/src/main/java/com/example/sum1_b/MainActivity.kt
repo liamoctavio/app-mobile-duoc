@@ -1,5 +1,6 @@
 package com.example.sum1_b
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,17 +24,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 
 import androidx.compose.ui.platform.LocalContext
+import com.example.sum1_b.viewmodel.AppViewModel
 
 import com.google.firebase.auth.FirebaseAuth
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
+import com.example.sum1_b.ui.theme.ProfileScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkAndRequestPermissions(this)
+
         enableEdgeToEdge()
         setContent {
             Sum1_bTheme {
                 val navController = rememberNavController()
                 val userViewModel: UserViewModel = viewModel()
+                val appViewModel: AppViewModel = viewModel()
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
@@ -70,16 +80,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-
                         composable("register_screen") {
                             val context = LocalContext.current
                             RegisterScreen(
                                 onNavigateBack = { navController.popBackStack() },
                                 userViewModel = userViewModel,
+                                viewModel = appViewModel,
                                 context = context
-
                             )
                         }
+
 
                         composable("home_screen/{userId}") { backStackEntry ->
                             val userId = backStackEntry.arguments?.getString("userId") ?: ""
@@ -87,6 +97,7 @@ class MainActivity : ComponentActivity() {
                             if (userId.isNotBlank()) {
                                 HomeScreen(
                                     userId = userId,
+                                    navController = navController,
                                     onLogout = {
                                         FirebaseAuth.getInstance().signOut()
                                         navController.navigate("login_screen") {
@@ -95,16 +106,48 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             } else {
-
                                 navController.navigate("login_screen") {
                                     popUpTo("home_screen") { inclusive = true }
                                 }
                             }
                         }
+
+                        composable("profile_screen/{userId}") { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+
+                            if (userId.isNotBlank()) {
+                                ProfileScreen(userId = userId)
+                            } else {
+                                navController.navigate("home_screen/$userId") {
+                                    popUpTo("profile_screen") { inclusive = true }
+                                }
+                            }
+                        }
+
+
                     }
                 }
             }
         }
     }
 }
+
+
+
+private fun checkAndRequestPermissions(activity: Activity) {
+    val permissions = arrayOf(
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
+    if (permissions.all {
+            ContextCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED
+        }) {
+
+    } else {
+        ActivityCompat.requestPermissions(activity, permissions, 1001)
+    }
+}
+
 

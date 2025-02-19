@@ -211,11 +211,15 @@ fun LoginScreen(
                             coroutineScope.launch {
                                 val valid = userViewModel.loginUser(email, password)
                                 if (valid) {
-                                    snackbarHostState.showSnackbar("Login exitoso. ¡Bienvenido!")
-                                    tts?.speak("Login exitoso. Bienvenido", TextToSpeech.QUEUE_FLUSH, null, null)
-                                    delay(1000)
                                     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
                                     if (userId.isNotBlank()) {
+                                        val userName = userViewModel.getUserNameFromFirebase(userId)
+
+                                        val welcomeMessage = "¡Bienvenido $userName!"
+                                        snackbarHostState.showSnackbar(welcomeMessage)
+                                        tts?.speak(welcomeMessage, TextToSpeech.QUEUE_FLUSH, null, null)
+
+
                                         onNavigateToHome(userId)
                                     } else {
                                         errorMessage = "Error al obtener usuario. Inténtalo de nuevo."
@@ -227,6 +231,8 @@ fun LoginScreen(
                                 }
                                 isLoading = false
                             }
+
+
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
